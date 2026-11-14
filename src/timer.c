@@ -43,6 +43,12 @@ struct timespec remainingTime(const Timer *timer) {
 	
     remaining.tv_sec = timer->end_time.tv_sec - getNow().tv_sec;
     remaining.tv_nsec = timer->end_time.tv_nsec - getNow().tv_nsec;
+
+    if (remaining.tv_nsec >= 1000000000L) {
+        remaining.tv_sec++;
+        remaining.tv_nsec -= 1000000000L;
+    }
+
     return remaining;
 }
 
@@ -63,8 +69,19 @@ void pauseTimer(Timer *timer) {
 }
 
 void resumeTimer(Timer *timer) {
-    timer -> end_time.tv_sec += timer -> remainingTime.tv_sec;
-    timer -> end_time.tv_nsec += timer -> remainingTime.tv_nsec;
+    struct timespec now = getNow();
+
+    timer->end_time.tv_sec =
+        now.tv_sec + timer->remainingTime.tv_sec;
+
+    timer->end_time.tv_nsec =
+        now.tv_nsec + timer->remainingTime.tv_nsec;
+
+    if (timer->end_time.tv_nsec >= 1000000000L) {
+        timer->end_time.tv_sec++;
+        timer->end_time.tv_nsec -= 1000000000L;
+    }
+
     timer -> state = TIMER_RUNNING;
 }
 
