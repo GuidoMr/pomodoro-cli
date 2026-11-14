@@ -1,0 +1,73 @@
+#include "../include/timer.h"
+#include <bits/time.h>
+#include <time.h>
+
+Timer initTimer(int minutes, int seconds) {
+    int totalSeconds = minutes * 60 + seconds;
+    return initTimerSeconds(totalSeconds);
+}
+
+
+Timer initTimerSeconds(int seconds) { 
+    Timer timer;
+    resetTimerSeconds(seconds, &timer);
+    return timer;
+}
+
+void resetTimer(int minutes, int seconds, Timer *timer) {
+    int totalSeconds = minutes * 60 + seconds;
+
+    resetTimerSeconds(totalSeconds, timer);
+}
+
+struct timespec getNow() {
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return now;
+}
+
+void resetTimerSeconds(int seconds, Timer *timer) {
+    timer -> start_seconds = seconds;
+    timer -> state = TIMER_RUNNING;
+
+    timer -> end_time.tv_sec = getNow().tv_sec + seconds;
+    timer -> end_time.tv_nsec = 0;
+}
+
+struct timespec remainingTime(const Timer *timer) {
+    struct timespec remaining;
+    if(timer->state == TIMER_PAUSED) {
+	remaining = timer->remainingTime;
+	return remaining;
+    }
+	
+    remaining.tv_sec = timer->end_time.tv_sec - getNow().tv_sec;
+    remaining.tv_nsec = timer->end_time.tv_nsec - getNow().tv_nsec;
+    return remaining;
+}
+
+int getRemainingSeconds(const Timer *timer) { 
+    return remainingTime(timer).tv_sec % 60;
+}
+int getRemainingMinutes(const Timer *timer) {
+   return remainingTime(timer).tv_sec / 60;
+}
+int getPercentage(const Timer *timer) {
+    return ((timer->start_seconds - remainingTime(timer).tv_sec) * 100)
+           / timer->start_seconds;
+}
+
+void pauseTimer(Timer *timer) {
+    timer -> remainingTime = remainingTime(timer);
+    timer -> state = TIMER_PAUSED;
+}
+
+void resumeTimer(Timer *timer) {
+    timer -> end_time.tv_sec += timer -> remainingTime.tv_sec;
+    timer -> end_time.tv_nsec += timer -> remainingTime.tv_nsec;
+    timer -> state = TIMER_RUNNING;
+}
+
+int isTimerPaused(const Timer *timer) { 
+    return (timer -> state == TIMER_PAUSED);
+}
