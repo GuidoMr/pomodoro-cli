@@ -20,6 +20,7 @@ void resetTimer(int minutes, int seconds, Timer *timer) {
     resetTimerSeconds(totalSeconds, timer);
 }
 
+// Returns the current time.
 struct timespec getNow() {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
@@ -63,12 +64,23 @@ int getPercentage(const Timer *timer) {
            / timer->start_seconds;
 }
 
+void togglePauseTimer(Timer *timer) {
+    if(timer -> state == TIMER_PAUSED) resumeTimer(timer);
+    else pauseTimer(timer);
+}
+
 void pauseTimer(Timer *timer) {
+    if(timer -> state == TIMER_PAUSED) {
+	return;
+    }
     timer -> remainingTime = remainingTime(timer);
     timer -> state = TIMER_PAUSED;
 }
 
 void resumeTimer(Timer *timer) {
+    if(timer -> state == TIMER_RUNNING) {
+	return;
+    }
     struct timespec now = getNow();
 
     timer->end_time.tv_sec =

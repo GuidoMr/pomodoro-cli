@@ -48,19 +48,10 @@ void nextPomodoro(Pomodoro *pomodoro) {
 }
 
 void togglePausePomodoro(Pomodoro *pomodoro) {
-    if(pomodoro -> timer.state == TIMER_PAUSED) {
-	resumePomodoro(pomodoro);
-	return;
-    }
-    pausePomodoro(pomodoro);
+    togglePauseTimer(&pomodoro -> timer);
 }
-
-void pausePomodoro(Pomodoro *pomodoro) {
-    pauseTimer(&pomodoro -> timer);
-}
-
-void resumePomodoro(Pomodoro *pomodoro) {
-    resumeTimer(&pomodoro -> timer);
+int getPhase(const Pomodoro *pomodoro) { 
+    return pomodoro -> phase;
 }
 
 int getTimerPercentage(const Pomodoro *pomodoro) {

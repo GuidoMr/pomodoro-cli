@@ -44,9 +44,28 @@ int main(void) {
         printf("| Q - Quit                 |\n");
 
 	printf("---\n");
-	printf("\r%d:%d", getRemainingCycleMinutes(&pomodoro), getRemainingCycleSeconds(&pomodoro));
-	fflush(stdout);
+	for (int i = 0; i < 10; i++) {
+	    if (i < getTimerPercentage(&pomodoro) / 10) printf("=");
+	    else printf("-");
+	}
+	printf("\n---\n");
 
+	if(isPomodoroCycleFinished(&pomodoro)) printf("00:00\n");
+	else printf("%02d:%02d\n", getRemainingCycleMinutes(&pomodoro), getRemainingCycleSeconds(&pomodoro));
+
+	printf("                                                                                        ");
+	switch(getPhase(&pomodoro)) {
+	    case 0:
+		printf("\rFOCUS\n");
+		break;
+	    case 1:
+		printf("\rSHORT BREAK\n");
+		break;
+	    case 2:
+		printf("\rLONG BREAK\n");
+	}
+
+	fflush(stdout);
 
 	int result = poll(&fds, 1, 100);
 	if (result > 0 && (fds.revents & POLLIN)) {
@@ -55,6 +74,9 @@ int main(void) {
 	    switch(c) {
 		case 'p':
 		    togglePausePomodoro(&pomodoro);
+		    break;
+		case 'n':
+		    nextPomodoro(&pomodoro);
 		    break;
 		case 'q':
 		    isRunning = 0;

@@ -19,9 +19,9 @@ typedef struct {
 
 Pomodoro initPomodoro();
 void nextPomodoro(Pomodoro *pomodoro);
-void pausePomodoro(Pomodoro *pomodoro);
-void resumePomodoro(Pomodoro *pomodoro);
 void togglePausePomodoro(Pomodoro *pomodoro);
+
+int getPhase(const Pomodoro *pomodoro);
 
 int getTimerPercentage(const Pomodoro *pomodoro);
 int getRemainingCycleMinutes(const Pomodoro *pomodoro);
