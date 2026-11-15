@@ -1,10 +1,11 @@
 #include <asm-generic/errno.h>
-#include<stdio.h>
-#include"../include/timer.h"
-#include "../include/pomodoro.h"
+#include <stdio.h>
 #include <termios.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <poll.h>
+#include"../include/timer.h"
+#include "../include/pomodoro.h"
 
 struct termios original;
 
@@ -22,6 +23,11 @@ void disable_raw_mode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &original);
 }
 
+void notifySystem(char* message) {
+    char msg[100];
+    snprintf(msg, sizeof(msg), "notify-send 'Pomodoro' '%s'", message);
+    system(msg);
+}
 
 int seconds;
 
@@ -31,6 +37,8 @@ int main(void) {
 	.events = POLLIN
     };
 
+    int messageSent = 0;;
+
     enableRawMode();
     printf("\033[2J");     // Clear screen
     printf("\033[?25l");   // Hide cursor
@@ -38,7 +46,8 @@ int main(void) {
     int isRunning = 1;
     while(isRunning) {
 	printf("\033[H"); // Move cursor to top-left
-	printf("|      POMODORO       |\n");
+	printf("|         POMODORO         |\n");
+	printf("----------------------------\n");
 	printf("| P - Pause/Unpause        |\n");
 	printf("| N - Next                 |\n");
         printf("| Q - Quit                 |\n");
@@ -50,7 +59,20 @@ int main(void) {
 	}
 	printf("\n---\n");
 
-	if(isPomodoroCycleFinished(&pomodoro)) printf("00:00\n");
+	if(isPomodoroCycleFinished(&pomodoro)){
+	    printf("00:00\n");
+	    if(!messageSent) {
+		messageSent = 1;
+		switch(getPhase(&pomodoro)) {
+		    case 0:
+			notifySystem("Time for a break!");
+			break;
+		    default:
+			notifySystem("Break is over. Time to focus!");
+		}
+	    }
+
+	} 
 	else printf("%02d:%02d\n", getRemainingCycleMinutes(&pomodoro), getRemainingCycleSeconds(&pomodoro));
 
 	printf("                                                                                        ");
@@ -77,6 +99,7 @@ int main(void) {
 		    break;
 		case 'n':
 		    nextPomodoro(&pomodoro);
+		    messageSent = 0;
 		    break;
 		case 'q':
 		    isRunning = 0;
