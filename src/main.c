@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <poll.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include"../include/timer.h"
 #include "../include/pomodoro.h"
 
@@ -25,6 +27,12 @@ void disable_raw_mode() {
 
 void notifySystem(char* message) {
     char msg[100];
+    pid_t pid = fork();
+    if(pid == 0) {
+	execlp("paplay", "paplay",
+       "assets/finished.wav", (char *)NULL);
+	_exit(1);
+    }
     snprintf(msg, sizeof(msg), "notify-send 'Pomodoro' '%s'", message);
     system(msg);
 }
@@ -59,7 +67,7 @@ int main(void) {
 	}
 	printf("\n---\n");
 
-	if(isPomodoroCycleFinished(&pomodoro)){
+	if(isPomodoroPhaseFinished(&pomodoro)){
 	    printf("00:00\n");
 	    if(!messageSent) {
 		messageSent = 1;
@@ -73,7 +81,7 @@ int main(void) {
 	    }
 
 	} 
-	else printf("%02d:%02d\n", getRemainingCycleMinutes(&pomodoro), getRemainingCycleSeconds(&pomodoro));
+	else printf("%02d:%02d\n", getRemainingPhaseMinutes(&pomodoro), getRemainingPhaseSeconds(&pomodoro));
 
 	printf("                                                                                        ");
 	switch(getPhase(&pomodoro)) {

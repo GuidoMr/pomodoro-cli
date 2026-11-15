@@ -58,11 +58,11 @@ int getTimerPercentage(const Pomodoro *pomodoro) {
     return getPercentage(&pomodoro->timer);
 }
 
-int getRemainingCycleMinutes(const Pomodoro *pomodoro) {
+int getRemainingPhaseMinutes(const Pomodoro *pomodoro) {
     return getRemainingMinutes(&pomodoro->timer);
 } 
 
-int getRemainingCycleSeconds(const Pomodoro *pomodoro) {
+int getRemainingPhaseSeconds(const Pomodoro *pomodoro) {
     return getRemainingSeconds(&pomodoro->timer);
 }
 
@@ -72,8 +72,8 @@ int isPomodoroPaused(const Pomodoro *pomodoro) {
 
 int getCycleNum(const Pomodoro *pomodoro) { return pomodoro->cycleNum; }
 
-int isPomodoroCycleFinished(const Pomodoro *pomodoro) {
-    return (getRemainingCycleSeconds(pomodoro) <= 0 && getRemainingCycleMinutes(pomodoro) <= 0);
+int isPomodoroPhaseFinished(const Pomodoro *pomodoro) {
+    return (getRemainingPhaseSeconds(pomodoro) <= 0 && getRemainingPhaseMinutes(pomodoro) <= 0);
 }
 
 int isPomodoroFinished(const Pomodoro *pomodoro) { 
