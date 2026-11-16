@@ -57,20 +57,15 @@ void testNextPomodoro() {
     assert(pomodoro.phase == SHORT_BREAK);
 }
 
-void testPausePomodoro() {
+void testTogglePausePomodoro(void) {
     Pomodoro pomodoro = initPomodoro();
 
-    pausePomodoro(&pomodoro);
+    assert(pomodoro.timer.state == TIMER_RUNNING);
 
+    togglePausePomodoro(&pomodoro);
     assert(pomodoro.timer.state == TIMER_PAUSED);
-}
 
-void testResumePomodoro() {
-    Pomodoro pomodoro = initPomodoro();
-
-    pausePomodoro(&pomodoro);
-    resumePomodoro(&pomodoro);
-
+    togglePausePomodoro(&pomodoro);
     assert(pomodoro.timer.state == TIMER_RUNNING);
 }
 
@@ -79,7 +74,6 @@ void testResumePomodoro() {
 int main() {
     testInitPomodoro();
     testNextPomodoro();
-    testPausePomodoro();
-    testResumePomodoro();
+    testTogglePausePomodoro();
     printf("All pomodoro tests passed!\n");
 } 

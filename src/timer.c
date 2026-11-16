@@ -50,6 +50,11 @@ struct timespec remainingTime(const Timer *timer) {
         remaining.tv_nsec -= 1000000000L;
     }
 
+    if(remaining.tv_sec == 0 && remaining.tv_nsec == 0L) {
+	remaining.tv_sec = 0;
+	remaining.tv_nsec = 0;
+    }
+
     return remaining;
 }
 

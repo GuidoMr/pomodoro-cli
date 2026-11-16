@@ -2,14 +2,14 @@
 #include <assert.h>
 #include <stdio.h>
 
-    void testInitTimer() {
-	Timer timer = initTimer(25, 30);
+void testInitTimer() {
+    Timer timer = initTimer(25, 30);
 
-	assert(timer.start_seconds == 1530);
-    }
+    assert(timer.start_seconds == 1530);
+}
 
-    void testInitTimerSeconds() {
-	Timer timer = initTimerSeconds(90);
+void testInitTimerSeconds() {
+    Timer timer = initTimerSeconds(90);
 
     assert(timer.start_seconds == 90);
 }
@@ -41,7 +41,7 @@ void testPauseTimer(void) {
 
 void testResumeTimer(void) {
     Timer timer = initTimerSeconds(30);
-    
+
     timer.remainingTime.tv_sec = 15;
     timer.remainingTime.tv_nsec = 0;
     timer.state = TIMER_PAUSED;
@@ -68,6 +68,42 @@ void testPercentage() {
     assert(getPercentage(&timer) == 100);
 }
 
+void testRemainingTime(void) {
+    Timer timer = initTimerSeconds(60);
+
+    struct timespec remaining = remainingTime(&timer);
+
+    assert(remaining.tv_sec >= 59);
+    assert(remaining.tv_sec <= 60);
+
+    // Paused timer should return its stored remaining time.
+    timer.state = TIMER_PAUSED;
+    timer.remainingTime.tv_sec = 25;
+    timer.remainingTime.tv_nsec = 500000000;
+
+    remaining = remainingTime(&timer);
+
+    assert(remaining.tv_sec == 25);
+    assert(remaining.tv_nsec == 500000000);
+}
+
+void testTogglePauseTimer(void) {
+    Timer timer = initTimerSeconds(60);
+
+    assert(timer.state == TIMER_RUNNING);
+
+    togglePauseTimer(&timer);
+    assert(timer.state == TIMER_PAUSED);
+
+    togglePauseTimer(&timer);
+    assert(timer.state == TIMER_RUNNING);
+
+    togglePauseTimer(&timer);
+    assert(timer.state == TIMER_PAUSED);
+}
+
+// Other functions are simple getters.
+
 int main(void) {
     testInitTimer();
     testInitTimerSeconds();
@@ -77,6 +113,9 @@ int main(void) {
     testResumeTimer();
 
     testPercentage();
+
+    testRemainingTime();
+    testTogglePauseTimer();
 
     printf("All tests passed!\n");
     return 0;
