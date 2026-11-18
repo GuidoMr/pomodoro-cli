@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include"../include/timer.h"
+#include "../include/timer.h"
 #include "../include/pomodoro.h"
 
 struct termios original;
@@ -37,7 +37,7 @@ void enableRawMode() {
     }
 }
 
-void disable_raw_mode() {
+void disableRawMode() {
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &original) == -1) {
 	perror("Failed to restore terminal attributes.");
     }
@@ -153,8 +153,9 @@ int main(void) {
         printf("| Q - Quit                 |\n");
 
 	printf("---\n");
+	int timerPercentage = getTimerPercentage(&pomodoro);
 	for (int i = 0; i < 10; i++) {
-	    if (i < getTimerPercentage(&pomodoro) / 10) printf("=");
+	    if (i < timerPercentage / 10) printf("=");
 	    else printf("-");
 	}
 	printf("\n---\n");
@@ -231,7 +232,7 @@ int main(void) {
 	}
     }
 
-    disable_raw_mode();
+    disableRawMode();
 
     printf("\033[2J");     // Clear screen
     printf("\033[?25h");   // Show cursor
