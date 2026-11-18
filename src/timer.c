@@ -1,5 +1,4 @@
 #include "../include/timer.h"
-#include <bits/time.h>
 #include <time.h>
 
 Timer initTimer(int minutes, int seconds) {
@@ -28,11 +27,11 @@ struct timespec getNow() {
 }
 
 void resetTimerSeconds(int seconds, Timer *timer) {
-    timer -> start_seconds = seconds;
+    timer -> startSeconds = seconds;
     timer -> state = TIMER_RUNNING;
 
-    timer -> end_time.tv_sec = getNow().tv_sec + seconds;
-    timer -> end_time.tv_nsec = 0;
+    timer -> endTime.tv_sec = getNow().tv_sec + seconds;
+    timer -> endTime.tv_nsec = getNow().tv_nsec;
 }
 
 struct timespec remainingTime(const Timer *timer) {
@@ -42,8 +41,8 @@ struct timespec remainingTime(const Timer *timer) {
 	return remaining;
     }
 	
-    remaining.tv_sec = timer->end_time.tv_sec - getNow().tv_sec;
-    remaining.tv_nsec = timer->end_time.tv_nsec - getNow().tv_nsec;
+    remaining.tv_sec = timer->endTime.tv_sec - getNow().tv_sec;
+    remaining.tv_nsec = timer->endTime.tv_nsec - getNow().tv_nsec;
 
     if (remaining.tv_nsec >= 1000000000L) {
         remaining.tv_sec++;
@@ -65,8 +64,9 @@ int getRemainingMinutes(const Timer *timer) {
    return remainingTime(timer).tv_sec / 60;
 }
 int getPercentage(const Timer *timer) {
-    return ((timer->start_seconds - remainingTime(timer).tv_sec) * 100)
-           / timer->start_seconds;
+    if (timer -> startSeconds <= 0) return 100;
+    return ((timer->startSeconds - remainingTime(timer).tv_sec) * 100)
+           / timer->startSeconds;
 }
 
 void togglePauseTimer(Timer *timer) {
@@ -88,15 +88,15 @@ void resumeTimer(Timer *timer) {
     }
     struct timespec now = getNow();
 
-    timer->end_time.tv_sec =
+    timer->endTime.tv_sec =
         now.tv_sec + timer->remainingTime.tv_sec;
 
-    timer->end_time.tv_nsec =
+    timer->endTime.tv_nsec =
         now.tv_nsec + timer->remainingTime.tv_nsec;
 
-    if (timer->end_time.tv_nsec >= 1000000000L) {
-        timer->end_time.tv_sec++;
-        timer->end_time.tv_nsec -= 1000000000L;
+    if (timer->endTime.tv_nsec >= 1000000000L) {
+        timer->endTime.tv_sec++;
+        timer->endTime.tv_nsec -= 1000000000L;
     }
 
     timer -> state = TIMER_RUNNING;

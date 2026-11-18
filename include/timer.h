@@ -12,12 +12,12 @@ typedef enum {
 // The timer type.
 typedef struct {
     // The time set to end the timer, should it not be paused.
-    struct timespec end_time;
+    struct timespec endTime;
     // The remaining time on the timer **WHEN IT IS PAUSED**.
     struct timespec remainingTime;
     
     // The number of seconds the timer starts at.
-    int start_seconds;
+    int startSeconds;
     // The timer state - running or paused.
     TimerState state;
 } Timer;
@@ -105,4 +105,3 @@ void resumeTimer(Timer* timer);
 int isTimerPaused(const Timer* timer);
 
 #endif // !TIMER_H
-#define TIMER_H
