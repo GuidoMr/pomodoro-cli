@@ -117,6 +117,6 @@ int main(void) {
     testRemainingTime();
     testTogglePauseTimer();
 
-    printf("All tests passed!\n");
+    printf("All timer tests passed!\n");
     return 0;
 }

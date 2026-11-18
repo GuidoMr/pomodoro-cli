@@ -16,5 +16,7 @@ test_pomodoro: tests/test_pomodoro.c src/pomodoro.c src/timer.c
 	$(CC) $(CFLAGS) tests/test_pomodoro.c src/pomodoro.c src/timer.c -o build/test_pomodoro 
 	build/test_pomodoro 
 
+test: test_timer test_pomodoro
+
 clean: 
 	rm -rf build/
