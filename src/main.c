@@ -6,10 +6,18 @@
 #include <poll.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 #include"../include/timer.h"
 #include "../include/pomodoro.h"
 
 struct termios original;
+
+volatile sig_atomic_t isRunning = 1;
+
+void handleSignal(int sig) {
+    (void)sig;
+    isRunning = 0;
+}
 
 void enableRawMode() {
     if(tcgetattr(STDIN_FILENO, &original) == -1) {
@@ -117,13 +125,24 @@ int main(void) {
 	.events = POLLIN
     };
 
+    struct sigaction sa = {0};
+
+    sa.sa_handler = handleSignal;
+    sigemptyset(&sa.sa_mask);
+
+    if (sigaction(SIGINT, &sa, NULL) == -1 ||
+	    sigaction(SIGTERM, &sa, NULL) == -1) {
+	perror("sigaction failed");
+	return EXIT_FAILURE;
+    }
+
     int messageSent = 0;
 
     enableRawMode();
     printf("\033[2J");     // Clear screen
     printf("\033[?25l");   // Hide cursor
     Pomodoro pomodoro = initPomodoro();		
-    int isRunning = 1;
+
     while(isRunning) {
 	checkChildren();
 	printf("\033[H"); // Move cursor to top-left
