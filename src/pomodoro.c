@@ -50,7 +50,7 @@ void nextPomodoro(Pomodoro *pomodoro) {
 void togglePausePomodoro(Pomodoro *pomodoro) {
     togglePauseTimer(&pomodoro -> timer);
 }
-int getPhase(const Pomodoro *pomodoro) { 
+PomodoroPhase getPhase(const Pomodoro *pomodoro) { 
     return pomodoro -> phase;
 }
 

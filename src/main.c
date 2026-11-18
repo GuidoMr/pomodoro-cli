@@ -92,7 +92,7 @@ void checkChildren(void) {
 }
 
 
-void notifySystem(char* message) {
+void notifySystem(const char* message) {
     pid_t pid = fork();
 
     if (pid == -1) {
@@ -186,13 +186,13 @@ int main(void) {
 
 	printf("                                                                                        ");
 	switch(getPhase(&pomodoro)) {
-	    case 0:
+	    case FOCUS:
 		printf("\rFOCUS\n");
 		break;
-	    case 1:
+	    case SHORT_BREAK:
 		printf("\rSHORT BREAK\n");
 		break;
-	    case 2:
+	    case LONG_BREAK:
 		printf("\rLONG BREAK\n");
 	}
 

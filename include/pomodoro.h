@@ -43,9 +43,9 @@ void togglePausePomodoro(Pomodoro *pomodoro);
 /**
  * Gets the phase an instance of pomodoro is at.
  * @param pomodoro A pointer to the instance of pomodoro.
- * @return An int representing the phase - 0 = FOCUS, 1 = SHORT_BREAK and 2 = LONG_BREAK.
+ * @return The phase - 0 = FOCUS, 1 = SHORT_BREAK and 2 = LONG_BREAK.
  */
-int getPhase(const Pomodoro *pomodoro);
+PomodoroPhase getPhase(const Pomodoro *pomodoro);
 
 /**
  * Gets the percentage of the time that has already passed.
