@@ -2,9 +2,9 @@
 
 A terminal-based Pomodoro timer written in C, using POSIX APIs.
 
-![DEMO](assets/demo.gif)
+![Pomodoro timer running in the terminal](assets/demo.gif)
 
-![DEMO NOTIF](assets/demo2.gif)
+![Desktop notification](assets/demo2.gif)
 
 ## Features
 
@@ -79,9 +79,19 @@ The project includes tests for the timer and Pomodoro session logic.
 └── tests/        # Unit tests
 ```
 
-## Implementation
+## Implementation Details
 
 **The project is written in C and uses POSIX APIs for terminal input handling, process management, and signal handling.**
+
+**Timekeeping:** Uses `clock_gettime()` with `CLOCK_MONOTONIC` to measure elapsed time independently of system clock adjustments.
+
+**Process management:** Uses `fork()` and `execlp()` to run external programs for notifications (`paplay` and `notify-send`).
+
+**Non-blocking notifications:** Runs notification tasks in child processes so the timer doesn't have to stop until they are done.
+
+**Process lifecycle:** Handles child termination and reaping in the main loop without stopping the program, as well as on cleanup.
+
+**Testing:** Includes unit tests covering timer and Pomodoro session logic.
 
 ## License
 
