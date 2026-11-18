@@ -2,9 +2,9 @@
 
 A terminal-based Pomodoro timer written in C, using POSIX APIs.
 
-![DEMO][assets/demo.gif]
+![DEMO](assets/demo.gif)
 
-![DEMO NOTIF][assets/demo2.gif]
+![DEMO NOTIF](assets/demo2.gif)
 
 ## Features
 
