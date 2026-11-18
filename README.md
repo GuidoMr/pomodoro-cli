@@ -70,7 +70,7 @@ The project includes tests for the timer and Pomodoro session logic.
 
 ```text
 .
-├── assets/       # Sound file and demo gif
+├── assets/       # Sound file and demo GIFs
 ├── build/        # Compiled executable and tests
 ├── include/      # Header files
 ├── Makefile
