@@ -1,9 +1,13 @@
 #include "../include/pomodoro.h"
 #include "../include/timer.h"
 
+#define FOCUS_TIME 20
+#define SHORT_BREAK_TIME 5
+#define LONG_BREAK_TIME 10
+
 Pomodoro initPomodoro() { 
     Pomodoro pomodoro = { 
-	.timer = initTimer(20, 0),
+	.timer = initTimer(FOCUS_TIME, 0),
 	.cycleNum = 0,
 	.phase = FOCUS,
     };
@@ -11,40 +15,41 @@ Pomodoro initPomodoro() {
 }
 
 void startFocus(Pomodoro *pomodoro) {
-    resetTimer(20, 0, &pomodoro->timer);
+    pomodoro->phase = FOCUS;
+    resetTimer(FOCUS_TIME, 0, &pomodoro->timer);
 }
 
 void startShortBreak(Pomodoro *pomodoro) {
-    resetTimer(5, 0, &pomodoro->timer);
+    pomodoro->phase = SHORT_BREAK;
+    resetTimer(SHORT_BREAK_TIME, 0, &pomodoro->timer);
 }
 
 void startLongBreak(Pomodoro *pomodoro) {
-    resetTimer(10, 0, &pomodoro->timer);
+    pomodoro->phase = LONG_BREAK;
+    resetTimer(LONG_BREAK_TIME, 0, &pomodoro->timer);
 }
 
 void nextPomodoro(Pomodoro *pomodoro) {
-    if (pomodoro -> cycleNum == 4) {
-	pomodoro -> cycleNum = 0;
-	pomodoro -> phase = FOCUS;
-	startFocus(pomodoro);
-	return;
-    }
-    if(pomodoro -> phase == SHORT_BREAK) {
-	pomodoro -> cycleNum += 1;
-	pomodoro -> phase = FOCUS;
-	startFocus(pomodoro);
-	return;
-    }
+    switch (pomodoro->phase) {
+	case FOCUS:
+	    if (pomodoro->cycleNum == 3) {
+		pomodoro -> cycleNum++;
+		startLongBreak(pomodoro);
+	    } else {
+		startShortBreak(pomodoro);
+	    }
+	    break;
 
-    if (pomodoro -> cycleNum == 3) {
-	pomodoro -> cycleNum = 4;
-	pomodoro -> phase = LONG_BREAK;
-	startLongBreak(pomodoro);
-	return;
-    }
+	case SHORT_BREAK:
+	    pomodoro->cycleNum++;
+	    startFocus(pomodoro);
+	    break;
 
-    pomodoro -> phase = SHORT_BREAK;
-    startShortBreak(pomodoro);
+	case LONG_BREAK:
+	    pomodoro->cycleNum = 0;
+	    startFocus(pomodoro);
+	    break;
+    }
 }
 
 void togglePausePomodoro(Pomodoro *pomodoro) {
