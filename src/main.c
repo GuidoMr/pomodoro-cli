@@ -27,8 +27,8 @@ void enableRawMode() {
 
     struct termios raw = original;
 
-    // Disable showing what is types (ECHO) and canonical mode,
-    // sending every character to input as they are types (no need for line delimiter).
+    // Disable input echo and canonical mode.
+    // Characters are made available as they are typed (no need for line delimiter).
     raw.c_lflag &= ~(ECHO | ICANON);
 
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
@@ -95,19 +95,20 @@ void checkChildren(void) {
 void notifySystem(char* message) {
     pid_t pid = fork();
 
-    if(pid == -1) {
+    if (pid == -1) {
 	perror("Failed to fork sound process");
         return;
     }
-    if(pid == 0) {
+    if (pid == 0) {
 	execlp("paplay", "paplay",
 		"assets/finished.wav", (char *)NULL);
+	perror("Failed to run paplay");
 	_exit(EXIT_FAILURE);
     }
 
     pid = fork();
 
-    if(pid == -1) {
+    if (pid == -1) {
 	perror("Failed to fork notification process");
 	return;
     }
@@ -115,6 +116,7 @@ void notifySystem(char* message) {
     if (pid == 0) {
 	execlp("notify-send", "notify-send",
 		"Pomodoro", message, (char *)NULL);
+	perror("Failed to run notify-send");
 	_exit(EXIT_FAILURE);
     }
 }
@@ -138,13 +140,19 @@ int main(void) {
 
     int messageSent = 0;
 
+    // INITIALIZE 
+
     enableRawMode();
     printf("\033[2J");     // Clear screen
     printf("\033[?25l");   // Hide cursor
     Pomodoro pomodoro = initPomodoro();		
 
+    // MAIN LOOP
+   
     while(isRunning) {
 	checkChildren();
+	// PRINT MENU
+
 	printf("\033[H"); // Move cursor to top-left
 	printf("|         POMODORO         |\n");
 	printf("----------------------------\n");
@@ -190,6 +198,8 @@ int main(void) {
 
 	fflush(stdout);
 
+	// HANDLE INPUT
+
 	int result = poll(&fds, 1, 100);
 
 	if (result == -1) {
@@ -231,6 +241,8 @@ int main(void) {
 	    }
 	}
     }
+
+    // CLEANUP
 
     disableRawMode();
 
