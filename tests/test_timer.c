@@ -5,20 +5,20 @@
 void testInitTimer() {
     Timer timer = initTimer(25, 30);
 
-    assert(timer.start_seconds == 1530);
+    assert(timer.startSeconds == 1530);
 }
 
 void testInitTimerSeconds() {
     Timer timer = initTimerSeconds(90);
 
-    assert(timer.start_seconds == 90);
+    assert(timer.startSeconds == 90);
 }
 void testResetTimer() {
     Timer timer = initTimer(60, 0);
 
     resetTimer(25, 0, &timer);
 
-    assert(timer.start_seconds == 1500);
+    assert(timer.startSeconds == 1500);
 }
 
 void testResetTimerSeconds() {
@@ -26,7 +26,7 @@ void testResetTimerSeconds() {
 
     resetTimerSeconds(120, &timer);
 
-    assert(timer.start_seconds == 120);
+    assert(timer.startSeconds == 120);
 }
 
 void testPauseTimer(void) {
@@ -55,7 +55,7 @@ void testResumeTimer(void) {
 
 void testPercentage() {
     Timer timer = {
-	.start_seconds = 100,
+	.startSeconds = 100,
 	.remainingTime = {50, 0},
 	.state = TIMER_PAUSED,
     };

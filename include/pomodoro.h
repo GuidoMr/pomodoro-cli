@@ -89,4 +89,3 @@ int getCycleNum(const Pomodoro *pomodoro);
 int isPomodoroPhaseFinished(const Pomodoro *pomodoro);
 
 #endif // !POMODORO_H
-#define POMODORO_H

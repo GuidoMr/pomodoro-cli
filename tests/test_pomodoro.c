@@ -4,7 +4,7 @@
 
 void testInitPomodoro() {
     Pomodoro pomodoro = initPomodoro();
-    assert(pomodoro.timer.start_seconds == 20*60);
+    assert(pomodoro.timer.startSeconds == 20*60);
     assert(pomodoro.cycleNum == 0);
     assert(pomodoro.phase == FOCUS);
 }
@@ -12,47 +12,47 @@ void testInitPomodoro() {
 void testNextPomodoro() {
     Pomodoro pomodoro = initPomodoro();
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 5*60);
+    assert(pomodoro.timer.startSeconds == 5*60);
     assert(pomodoro.cycleNum == 0);
     assert(pomodoro.phase == SHORT_BREAK);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 20 * 60);
+    assert(pomodoro.timer.startSeconds == 20 * 60);
     assert(pomodoro.cycleNum == 1);
     assert(pomodoro.phase == FOCUS);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 5*60);
+    assert(pomodoro.timer.startSeconds == 5*60);
     assert(pomodoro.cycleNum == 1);
     assert(pomodoro.phase == SHORT_BREAK);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 20 * 60);
+    assert(pomodoro.timer.startSeconds == 20 * 60);
     assert(pomodoro.cycleNum == 2);
     assert(pomodoro.phase == FOCUS);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 5*60);
+    assert(pomodoro.timer.startSeconds == 5*60);
     assert(pomodoro.cycleNum == 2);
     assert(pomodoro.phase == SHORT_BREAK);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 20 * 60);
+    assert(pomodoro.timer.startSeconds == 20 * 60);
     assert(pomodoro.cycleNum == 3);
     assert(pomodoro.phase == FOCUS);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 10*60);
+    assert(pomodoro.timer.startSeconds == 10*60);
     assert(pomodoro.cycleNum == 4);
     assert(pomodoro.phase == LONG_BREAK);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 20 * 60);
+    assert(pomodoro.timer.startSeconds == 20 * 60);
     assert(pomodoro.cycleNum == 0);
     assert(pomodoro.phase == FOCUS);
 
     nextPomodoro(&pomodoro);
-    assert(pomodoro.timer.start_seconds == 5 * 60);
+    assert(pomodoro.timer.startSeconds == 5 * 60);
     assert(pomodoro.cycleNum == 0);
     assert(pomodoro.phase == SHORT_BREAK);
 }

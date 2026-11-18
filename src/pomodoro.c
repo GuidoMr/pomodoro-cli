@@ -76,10 +76,3 @@ int isPomodoroPhaseFinished(const Pomodoro *pomodoro) {
     return (getRemainingPhaseSeconds(pomodoro) <= 0 && getRemainingPhaseMinutes(pomodoro) <= 0);
 }
 
-int isPomodoroFinished(const Pomodoro *pomodoro) { 
-    return (getRemainingSeconds(&pomodoro -> timer) <= 0 && getRemainingMinutes(&pomodoro -> timer) <= 0);
-}
-
-int getCycleCount(const Pomodoro *pomodoro) { 
-    return pomodoro -> cycleNum;
-}
