@@ -30,8 +30,10 @@ void resetTimerSeconds(int seconds, Timer *timer) {
     timer -> startSeconds = seconds;
     timer -> state = TIMER_RUNNING;
 
-    timer -> endTime.tv_sec = getNow().tv_sec + seconds;
-    timer -> endTime.tv_nsec = getNow().tv_nsec;
+    struct timespec now = getNow();
+	
+    timer -> endTime.tv_sec = now.tv_sec + seconds;
+    timer -> endTime.tv_nsec = now.tv_nsec;
 }
 
 struct timespec remainingTime(const Timer *timer) {
@@ -40,16 +42,18 @@ struct timespec remainingTime(const Timer *timer) {
 	remaining = timer->remainingTime;
 	return remaining;
     }
-	
-    remaining.tv_sec = timer->endTime.tv_sec - getNow().tv_sec;
-    remaining.tv_nsec = timer->endTime.tv_nsec - getNow().tv_nsec;
 
-    if (remaining.tv_nsec >= 1000000000L) {
-        remaining.tv_sec++;
-        remaining.tv_nsec -= 1000000000L;
+    struct timespec now = getNow();
+	
+    remaining.tv_sec = timer->endTime.tv_sec - now.tv_sec;
+    remaining.tv_nsec = timer->endTime.tv_nsec - now.tv_nsec;
+
+    if (remaining.tv_nsec < 0) {
+        remaining.tv_sec--;
+        remaining.tv_nsec += 1000000000L;
     }
 
-    if(remaining.tv_sec == 0 && remaining.tv_nsec == 0L) {
+    if(remaining.tv_sec < 0) {
 	remaining.tv_sec = 0;
 	remaining.tv_nsec = 0;
     }
