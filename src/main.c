@@ -19,6 +19,8 @@ void enableRawMode() {
 
     struct termios raw = original;
 
+    // Disable showing what is types (ECHO) and canonical mode,
+    // sending every character to input as they are types (no need for line delimiter).
     raw.c_lflag &= ~(ECHO | ICANON);
 
     if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
@@ -33,17 +35,33 @@ void disable_raw_mode() {
     }
 }
 
-void waitForChildren(void) {
+void handleChildStatus(pid_t pid, int status) {
+    if(WIFEXITED(status)) {
+	if(WEXITSTATUS(status) != 0) {
+	    fprintf(stderr, "Child %ld failed with exid code %d\n", 
+		    (long)pid, WEXITSTATUS(status));
+	}
+    } else if (WIFSIGNALED(status)) {
+	fprintf(stderr, "Child %ld terminated by signal %d\n",
+		(long)pid, WTERMSIG(status));
+    } else {
+	fprintf(stderr, "Child %ld terminated unexpectedly\n", (long)pid);
+    }
+}
+
+void reapChildren(int mode) {
     int status;
     pid_t result;
 
     while (1) {
-        result = waitpid(-1, &status, 0);
+        result = waitpid(-1, &status, mode);
 
         if (result > 0) {
+	    handleChildStatus(result, status);
             continue;
         }
 
+	// Interrupted before collecting child.
         if (result == -1 && errno == EINTR) {
             continue;
         }
@@ -52,30 +70,19 @@ void waitForChildren(void) {
             perror("Failed to wait for child processes");
         }
 
+	// errno == ECHILD -> no more children to wait for.
         break;
     }
 }
 
-void checkChildren(void) {
-    int status;
-    pid_t result;
-
-    while ((result = waitpid(-1, &status, WNOHANG)) > 0) {
-        if (WIFEXITED(status)) {
-            if (WEXITSTATUS(status) != 0) {
-                fprintf(stderr, "Child %ld failed with exit code %d\n",
-                        (long)result, WEXITSTATUS(status));
-            }
-        } else if (WIFSIGNALED(status)) {
-	    fprintf(stderr, "Child %ld terminated by signal %d\n",
-	    (long)result, WTERMSIG(status));
-	}
-    }
-
-    if (result == -1 && errno != ECHILD && errno != EINTR) {
-        perror("waitpid failed");
-    }
+void waitForChildren(void) {
+    reapChildren(0);
 }
+
+void checkChildren(void) {
+    reapChildren(WNOHANG);
+}
+
 
 void notifySystem(char* message) {
     pid_t pid = fork();
@@ -182,7 +189,6 @@ int main(void) {
 		if (errno == EINTR) {
 		    continue;
 		}
-
 		perror("read failed");
 		break;
 	    } 
