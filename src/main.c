@@ -121,6 +121,16 @@ void notifySystem(const char* message) {
     }
 }
 
+void cleanup() {
+    disableRawMode();
+
+    printf("\033[2J");     // Clear screen
+    printf("\033[?25h");   // Show cursor
+    fflush(stdout);
+
+    waitForChildren();
+}
+
 int main(void) {
     struct pollfd fds = {
 	.fd = STDIN_FILENO,
@@ -143,9 +153,15 @@ int main(void) {
     // INITIALIZE 
 
     enableRawMode();
+    atexit(cleanup);
     printf("\033[2J");     // Clear screen
     printf("\033[?25l");   // Hide cursor
-    Pomodoro pomodoro = initPomodoro();		
+			   //
+    Pomodoro pomodoro;
+    if(initPomodoro(&pomodoro) != POMODORO_OK) { 
+	fprintf(stderr, "Failed to initialize pomodoro");
+	_exit(EXIT_FAILURE);
+    }
 
     // MAIN LOOP
    
@@ -161,14 +177,25 @@ int main(void) {
         printf("| Q - Quit                 |\n");
 
 	printf("---\n");
-	int timerPercentage = getTimerPercentage(&pomodoro);
+	int timerPercentage;
+	if (getTimerPercentage(&pomodoro, &timerPercentage) != POMODORO_OK) {
+	    fprintf(stderr, "Failed to get timer percentage\n");
+	    _exit(EXIT_FAILURE);
+	} 
+
 	for (int i = 0; i < 10; i++) {
 	    if (i < timerPercentage / 10) printf("=");
 	    else printf("-");
 	}
 	printf("\n---\n");
 
-	if(isPomodoroPhaseFinished(&pomodoro)){
+	int isPhaseFinished;
+	if (isPomodoroPhaseFinished(&pomodoro, &isPhaseFinished) != POMODORO_OK) {
+	    fprintf(stderr, "Failed to get pomodoro phase status\n");
+	    _exit(EXIT_FAILURE);
+	} 
+
+	if(isPhaseFinished){
 	    printf("00:00\n");
 	    if(!messageSent) {
 		messageSent = 1;
@@ -182,7 +209,20 @@ int main(void) {
 	    }
 
 	} 
-	else printf("%02d:%02d\n", getRemainingPhaseMinutes(&pomodoro), getRemainingPhaseSeconds(&pomodoro));
+
+	int minutes;
+	if (getRemainingPhaseMinutes(&pomodoro, &minutes) != POMODORO_OK) {
+	    fprintf(stderr, "Failed to get remaining pomodoro phase minutes\n");
+	    _exit(EXIT_FAILURE);
+	}
+
+	int seconds;
+	if (getRemainingPhaseSeconds(&pomodoro, &seconds) != POMODORO_OK) {
+	    fprintf(stderr, "Failed to get remaining pomodoro phase seconds\n");
+	    _exit(EXIT_FAILURE);
+	}
+
+	else printf("%02d:%02d\n", minutes, seconds);
 
 	printf("                                                                                        ");
 	switch(getPhase(&pomodoro)) {
@@ -243,14 +283,8 @@ int main(void) {
     }
 
     // CLEANUP
-
-    disableRawMode();
-
-    printf("\033[2J");     // Clear screen
-    printf("\033[?25h");   // Show cursor
-    fflush(stdout);
-
-    waitForChildren();
+    
+    cleanup();
 
     return 0;
 }

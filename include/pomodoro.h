@@ -10,6 +10,13 @@ typedef enum {
     LONG_BREAK,
 } PomodoroPhase;
 
+typedef enum {
+    POMODORO_OK,
+    POMODORO_ERROR_NOT_INITIALIZED,
+    POMODORO_ERROR_NULL_POINTER,
+    POMODORO_ERROR_TIMER
+} PomodoroError;
+
 // All the data needed for the pomodoro app.
 typedef struct {
     // The timer.
@@ -21,24 +28,31 @@ typedef struct {
     // The phase of the pomodoro app (FOCUS, SHORT BREAK or LONG_BREAK).
     PomodoroPhase phase;
 
+    // 0 if not initialized, 1 otherwise.
+    int isInitialized;
+
 } Pomodoro;
 
 /**
  * Initializes an instance of the pomodoro app.
+ * @param pomodoro A pointer to the instance of Pomodoro to be created.
+ * @return an error code (POMODORO_OK if no error).
  */
-Pomodoro initPomodoro();
+PomodoroError initPomodoro(Pomodoro *pomodoro);
 
 /**
  * Updates the pomodoro app to the next phase in the cycle (or next cycle).
  * @param pomodoro A pointer to the instance of pomodoro.
+ * @return an error code (POMODORO_OK if no error).
  */
-void nextPomodoro(Pomodoro *pomodoro);
+PomodoroError nextPomodoro(Pomodoro *pomodoro);
 
 /**
  * Toggles the pause function on the pomodoro timer, pausing the app.
  * @param pomodoro A pointer to the instance of pomodoro.
+ * @return an error code (POMODORO_OK if no error).
  */
-void togglePausePomodoro(Pomodoro *pomodoro);
+PomodoroError togglePausePomodoro(Pomodoro *pomodoro);
 
 /**
  * Gets the phase an instance of pomodoro is at.
@@ -50,23 +64,26 @@ PomodoroPhase getPhase(const Pomodoro *pomodoro);
 /**
  * Gets the percentage of the time that has already passed.
  * @param pomodoro A pointer to the instance of pomodoro.
- * @return The percentage.
+ * @param timerPercentage An output parameter for the percentage.
+ * @return an error code (POMODORO_OK if no error).
  */
-int getTimerPercentage(const Pomodoro *pomodoro);
+PomodoroError getTimerPercentage(const Pomodoro *pomodoro, int *timerPercentage);
 
 /**
  * Gets the number of minutes left in the current phase.
  * @param pomodoro A pointer to the instance of pomodoro.
- * @return The number of minutes.
+ * @param Output parameter for the number of minutes.
+ * @return an error code (POMODORO_OK if no error).
  */
-int getRemainingPhaseMinutes(const Pomodoro *pomodoro);
+PomodoroError getRemainingPhaseMinutes(const Pomodoro *pomodoro, int *remainingMinutes);
 
 /**
  * Gets the number of seconds left in the current phase.
  * @param pomodoro A pointer to the instance of pomodoro.
- * @return The number of seconds.
+ * @param Output parameter for the number of seconds.
+ * @return an error code (POMODORO_OK if no error).
  */
-int getRemainingPhaseSeconds(const Pomodoro *pomodoro);
+PomodoroError getRemainingPhaseSeconds(const Pomodoro *pomodoro, int *remainingSeconds);
 
 /**
  * Weather or not a pomodoro instance is paused.
@@ -84,8 +101,9 @@ int getCycleNum(const Pomodoro *pomodoro);
 /**
  * Weather or not the current phase in a pomodoro instance is finished.
  * @param pomodoro A pointer to the instance of pomodoro.
- * @return 1 if finished, 0 otherwise.
+ * @param ifPhaseFinished Output parameter - 1 if finished, 0 otherwise.
+ * @return an error code (POMODORO_OK if no error).
  */
-int isPomodoroPhaseFinished(const Pomodoro *pomodoro);
+PomodoroError isPomodoroPhaseFinished(const Pomodoro *pomodoro, int *isPhaseFinished);
 
 #endif // !POMODORO_H

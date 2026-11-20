@@ -1,96 +1,124 @@
 #include "../include/timer.h"
 #include <time.h>
+#include <limits.h>
 
-Timer initTimer(int minutes, int seconds) {
-    int totalSeconds = minutes * 60 + seconds;
-    return initTimerSeconds(totalSeconds);
+TimerError initTimer(unsigned int minutes, unsigned int seconds, Timer *timer) {
+    if (minutes > (UINT_MAX - seconds) / 60) return TIMER_ERROR_OVERFLOW;
+    unsigned int totalSeconds = minutes * 60 + seconds;
+
+    return initTimerSeconds(totalSeconds, timer);
 }
 
+TimerError initTimerSeconds(unsigned int seconds, Timer *timer) {
+    if (timer == nullptr) return TIMER_ERROR_NULL_POINTER;
+    if (seconds > INT_MAX) return TIMER_ERROR_OVERFLOW;
 
-Timer initTimerSeconds(int seconds) { 
-    Timer timer;
-    resetTimerSeconds(seconds, &timer);
-    return timer;
-}
-
-void resetTimer(int minutes, int seconds, Timer *timer) {
-    int totalSeconds = minutes * 60 + seconds;
-
-    resetTimerSeconds(totalSeconds, timer);
-}
-
-// Returns the current time.
-struct timespec getNow() {
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    return now;
-}
-
-void resetTimerSeconds(int seconds, Timer *timer) {
     timer -> startSeconds = seconds;
     timer -> state = TIMER_RUNNING;
 
-    struct timespec now = getNow();
-	
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return TIMER_ERROR_GETTIME;
+
+
     timer -> endTime.tv_sec = now.tv_sec + seconds;
     timer -> endTime.tv_nsec = now.tv_nsec;
+    return TIMER_OK;
 }
 
-struct timespec remainingTime(const Timer *timer) {
-    struct timespec remaining;
+TimerError remainingTime(const Timer *timer, struct timespec *remaining) {
+    if (timer == nullptr || remaining == nullptr) return TIMER_ERROR_NULL_POINTER;
+
     if(timer->state == TIMER_PAUSED) {
-	remaining = timer->remainingTime;
-	return remaining;
+	*remaining = timer->remainingTime;
+	return TIMER_OK;
     }
 
-    struct timespec now = getNow();
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return TIMER_ERROR_GETTIME;
 	
-    remaining.tv_sec = timer->endTime.tv_sec - now.tv_sec;
-    remaining.tv_nsec = timer->endTime.tv_nsec - now.tv_nsec;
+    remaining -> tv_sec = timer->endTime.tv_sec - now.tv_sec;
+    remaining -> tv_nsec = timer->endTime.tv_nsec - now.tv_nsec;
 
-    if (remaining.tv_nsec < 0) {
-        remaining.tv_sec--;
-        remaining.tv_nsec += 1000000000L;
+    if (remaining -> tv_nsec < 0) {
+        remaining -> tv_sec--;
+        remaining -> tv_nsec += 1000000000L;
     }
 
-    if(remaining.tv_sec < 0) {
-	remaining.tv_sec = 0;
-	remaining.tv_nsec = 0;
+    if(remaining -> tv_sec < 0) {
+	remaining -> tv_sec = 0;
+	remaining -> tv_nsec = 0;
     }
 
-    return remaining;
+    return TIMER_OK;
 }
 
-int getRemainingSeconds(const Timer *timer) { 
-    return remainingTime(timer).tv_sec % 60;
+TimerError getRemainingSeconds(const Timer *timer, int *remainingSeconds) { 
+    if (remainingSeconds == nullptr) return TIMER_ERROR_NULL_POINTER;
+
+    struct timespec remaining;
+    TimerError r = remainingTime(timer, &remaining);
+    if (r != TIMER_OK) return r;
+
+    *remainingSeconds = remaining.tv_sec % 60;
+    return TIMER_OK;
 }
-int getRemainingMinutes(const Timer *timer) {
-   return remainingTime(timer).tv_sec / 60;
+TimerError getRemainingMinutes(const Timer *timer, int *remainingMinutes) {
+    if (remainingMinutes == nullptr) return TIMER_ERROR_NULL_POINTER;
+
+    struct timespec remaining;
+    TimerError r = remainingTime(timer, &remaining);
+    if (r != TIMER_OK) return r;
+
+    *remainingMinutes = remaining.tv_sec / 60;
+    return TIMER_OK;
 }
-int getPercentage(const Timer *timer) {
-    if (timer -> startSeconds <= 0) return 100;
-    return ((timer->startSeconds - remainingTime(timer).tv_sec) * 100)
+TimerError getPercentage(const Timer *timer, int *percentage) {
+    if (percentage == nullptr) return TIMER_ERROR_NULL_POINTER;
+
+    struct timespec remaining;
+    TimerError r = remainingTime(timer, &remaining);
+    if (r != TIMER_OK) return r;
+
+    if (timer -> startSeconds <= 0) *percentage = 100;
+    else *percentage = ((timer->startSeconds - remaining.tv_sec) * 100)
            / timer->startSeconds;
+
+    return TIMER_OK;
 }
 
-void togglePauseTimer(Timer *timer) {
+TimerError togglePauseTimer(Timer *timer) {
+    if (timer == nullptr) return TIMER_ERROR_NULL_POINTER;
+
     if(timer -> state == TIMER_PAUSED) resumeTimer(timer);
     else pauseTimer(timer);
+
+    return TIMER_OK;
 }
 
-void pauseTimer(Timer *timer) {
+TimerError pauseTimer(Timer *timer) {
+    if (timer == nullptr) return TIMER_ERROR_NULL_POINTER;
+
     if(timer -> state == TIMER_PAUSED) {
-	return;
+	return TIMER_ERROR_ALREADY_PAUSED;
     }
-    timer -> remainingTime = remainingTime(timer);
+    struct timespec remaining;
+    TimerError r = remainingTime(timer, &remaining);
+    if (r != TIMER_OK) return r;
+
+    timer -> remainingTime = remaining;
     timer -> state = TIMER_PAUSED;
+    return TIMER_OK;
 }
 
-void resumeTimer(Timer *timer) {
+TimerError resumeTimer(Timer *timer) {
+    if (timer == nullptr) return TIMER_ERROR_NULL_POINTER;
+
     if(timer -> state == TIMER_RUNNING) {
-	return;
+	return TIMER_ERROR_ALREADY_UNPAUSED;
     }
-    struct timespec now = getNow();
+
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return TIMER_ERROR_GETTIME;
 
     timer->endTime.tv_sec =
         now.tv_sec + timer->remainingTime.tv_sec;
@@ -104,6 +132,7 @@ void resumeTimer(Timer *timer) {
     }
 
     timer -> state = TIMER_RUNNING;
+    return TIMER_OK;
 }
 
 int isTimerPaused(const Timer *timer) { 

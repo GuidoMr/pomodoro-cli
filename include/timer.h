@@ -9,6 +9,15 @@ typedef enum {
     TIMER_PAUSED
 } TimerState;
 
+typedef enum {
+    TIMER_OK,
+    TIMER_ERROR_OVERFLOW,
+    TIMER_ERROR_NULL_POINTER,
+    TIMER_ERROR_GETTIME,
+    TIMER_ERROR_ALREADY_PAUSED,
+    TIMER_ERROR_ALREADY_UNPAUSED,
+} TimerError;
+
 // The timer type.
 typedef struct {
     // The time set to end the timer, should it not be paused.
@@ -17,88 +26,84 @@ typedef struct {
     struct timespec remainingTime;
     
     // The number of seconds the timer starts at.
-    int startSeconds;
+    unsigned int startSeconds;
     // The timer state - running or paused.
     TimerState state;
 } Timer;
 
 /**
- * Creates a timer.
- * @param minutes Number of minutes for the timer.
- * @param seconds Number of seconds for the timer.
- * return the timer.
- */
-Timer initTimer(int minutes, int seconds);
-/**
- * Creates a timer.
- * @param seconds Number of seconds for the timer.
- * @return the timer.
- */
-Timer initTimerSeconds(int seconds);
-
-/**
  * Resets a timer to a new time.
  * @param minutes Number of minutes for the timer.
  * @param seconds Number of seconds for the timer.
- * @param timer A pointer to the timer to be reset.
+ * @param timer A pointer to the timer to be created.
+ * @return an error code (TIMER_OK if no error).
  */
-void resetTimer(int minutes, int seconds, Timer* timer);
+TimerError initTimer(unsigned int minutes, unsigned int seconds, Timer* timer);
 
 /**
  * Resets a timer to a new time.
  * @param seconds Number of seconds for the timer.
  * @param timer A pointer to the timer to be reset.
+ * @return an error code (TIMER_OK if no error).
  */
-void resetTimerSeconds(int seconds, Timer* timer);
+TimerError initTimerSeconds(unsigned int seconds, Timer* timer);
 
 /**
  * Gets the remaining time on the timer.
  * @param timer The timer.
- * @return the remaining time (seconds and nanoseconds).
+ * @param remaining A pointer to where remaining will be written.
+ * @param remaining Output parameter for the remaining time (seconds and nanoseconds).
+ * @return an error code (TIMER_OK if no error).
  */ 
-struct timespec remainingTime(const Timer* timer);
+TimerError remainingTime(const Timer* timer, struct timespec *remaining);
 
 /**
  * Gets the remaining seconds on the timer (just the seconds from the remianing time).
  * @param timer The timer.
- * @return the remaining seconds.
+ * @param remainingSeconds Output parameter for the remaining seconds.
+ * @return an error code (TIMER_OK if no error).
  */
-int getRemainingSeconds(const Timer* timer);
+TimerError getRemainingSeconds(const Timer* timer, int *remainingSeconds);
 
 /**
  * Gets the remaining minutes on the timer (just the minutes from the remianing time).
  * @param timer The timer.
- * @return the remaining minutes.
+ * @param remainingSeconds Output parameter for the remaining minutes.
+ * @return an error code (TIMER_OK if no error).
  */
-int getRemainingMinutes(const Timer* timer);
+TimerError getRemainingMinutes(const Timer* timer, int *remainingMinutes);
 
 /**
  * Gets the percentage of time that has already passed from the timer.
  * @param timer The timer.
- * @return the percentage of time that has already passed.
+ * @param percentage Output parameter for the percentage of time that has already passed.
+ * @return an error code (TIMER_OK if no error).
  */
-int getPercentage(const Timer* timer);
+TimerError getPercentage(const Timer* timer, int* percentage);
 
 /**
  * Pauses the timer if unpaused, unpauses if paused
  * @param timer The timer.
+ * @return an error code (TIMER_OK if no error).
  */
-void togglePauseTimer(Timer* timer);
+TimerError togglePauseTimer(Timer* timer);
 
 /**
  * Pauses the timer.
  * @param timer The timer.
+ * @return an error code (TIMER_OK if no error).
  */
-void pauseTimer(Timer* timer);
+TimerError pauseTimer(Timer* timer);
 
 /**
  * Resumes the timer after.
  * @param timer The timer.
+ * @return an error code (TIMER_OK if no error).
  */
-void resumeTimer(Timer* timer);
+TimerError resumeTimer(Timer* timer);
 
 /**
- * Wheather or not the timer is paused.
+ * Weather or not the timer is paused.
  * @param timer The timer.
  * @return 1 if paused, 0 otherwise.
  */
