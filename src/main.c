@@ -209,22 +209,24 @@ int main(void) {
 	    }
 
 	} 
+	else {
 
-	int minutes;
-	if (getRemainingPhaseMinutes(&pomodoro, &minutes) != POMODORO_OK) {
-	    fprintf(stderr, "Failed to get remaining pomodoro phase minutes\n");
-	    _exit(EXIT_FAILURE);
+	    int minutes;
+	    if (getRemainingPhaseMinutes(&pomodoro, &minutes) != POMODORO_OK) {
+		fprintf(stderr, "Failed to get remaining pomodoro phase minutes\n");
+		_exit(EXIT_FAILURE);
+	    }
+
+	    int seconds;
+	    if (getRemainingPhaseSeconds(&pomodoro, &seconds) != POMODORO_OK) {
+		fprintf(stderr, "Failed to get remaining pomodoro phase seconds\n");
+		_exit(EXIT_FAILURE);
+	    }
+	    printf("%02d:%02d\n", minutes, seconds);
+	    printf("                                                                                        ");
 	}
 
-	int seconds;
-	if (getRemainingPhaseSeconds(&pomodoro, &seconds) != POMODORO_OK) {
-	    fprintf(stderr, "Failed to get remaining pomodoro phase seconds\n");
-	    _exit(EXIT_FAILURE);
-	}
 
-	else printf("%02d:%02d\n", minutes, seconds);
-
-	printf("                                                                                        ");
 	switch(getPhase(&pomodoro)) {
 	    case FOCUS:
 		printf("\rFOCUS\n");
